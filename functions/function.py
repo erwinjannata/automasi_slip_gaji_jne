@@ -23,12 +23,12 @@ def send_email(file_data):
 
     working_directory = Path.cwd()
 
-    load_dotenv()
-    sender = os.getenv('SENDER_EMAIL')
-    sender_password = os.getenv('SENDER_PASSWORD')
+    # load_dotenv()
+    sender = 'app.it.ami@gmail.com'
+    sender_password = 'yson uwgu dyrh koom'
     recipent_name = data_sheet[f'B8:B{max_row}'].value
     recipent_email = data_sheet[f'AP8:AP{max_row}'].value
-    subject = f'Slip Gaji Periode {periode} | JNE AMI'
+    subject = f'Slip Gaji Periode {periode}'
     body = 'Do not reply this email'
 
     for index, name in enumerate(recipent_name):
@@ -46,7 +46,7 @@ def send_email(file_data):
 
         message = MIMEMultipart()
         message['Subject'] = subject
-        message['From'] = sender
+        message['From'] = f'JNE AMI <{sender}>'
         message['To'] = recipent_email[index]
         html_part = MIMEText(body)
         message.attach(html_part)
@@ -217,5 +217,5 @@ def generate_slip(file_data):
         main_book.close()
         app.quit()
         showinfo(title="Message",
-                 message="Program mengalami masalah, silahkan hubungi tim IT.")
+                 message=f"{e}")
         print(e)
