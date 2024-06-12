@@ -23,9 +23,9 @@ def send_email(file_data):
 
     working_directory = Path.cwd()
 
-    # load_dotenv()
-    sender = 'app.it.ami@gmail.com'
-    sender_password = 'yson uwgu dyrh koom'
+    load_dotenv()
+    sender = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("SENDER_PASSWORD")
     recipent_name = data_sheet[f'B8:B{max_row}'].value
     recipent_email = data_sheet[f'AP8:AP{max_row}'].value
     subject = f'Slip Gaji Periode {periode}'
