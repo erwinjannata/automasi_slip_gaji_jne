@@ -83,7 +83,7 @@ def generate_slip(file_data):
         main_book = xl.Book(file_data)
 
         data_sheet = main_book.sheets['Rekap JNE']
-        absen_sheet = main_book.sheets['ABSENSI']
+        detail_sheet = main_book.sheets['DETAIL ']
         template_sheet = main_book.sheets['SLIP TEMPLATE']
 
         main_book.sheets.add(name='Log Email', after='Rekap JNE')
@@ -100,6 +100,9 @@ def generate_slip(file_data):
         max_row = int(re.findall(
             r'\d+', (data_sheet.range("B8").end("down").address))[0])
 
+        detail_max_pusat = int(re.findall(
+            r'\d+', (detail_sheet.range('B4').end("down").address))[0])
+
         for i in range(8, max_row + 1):
             nama = data_sheet[f'B{i}'].value
             jabatan = data_sheet[f'C{i}'].value
@@ -112,41 +115,49 @@ def generate_slip(file_data):
             tunjangan_masa_kerja = data_sheet[f'G{i}'].value or 0
             tunjangan_beras = data_sheet[f'O{i}'].value or 0
             pulsa = data_sheet[f'I{i}'].value or 0
-            tunjangan_jpk = round(gaji_pokok * 0.05, 2)
-            tunjangan_jkm = round(gaji_pokok * 0.003, 2)
-            tunjangan_jkk = round(gaji_pokok * 0.0089, 2)
-            tunjangan_jht = round(gaji_pokok * 0.057, 2)
-            tunjangan_jp = round(gaji_pokok * 0.03, 2)
             piket = data_sheet[f'L{i}'].value or 0
             lembur = data_sheet[f'M{i}'].value or 0
             bonus = data_sheet[f'N{i}'].value or 0
+            claim_lalu = data_sheet[f'J{i}'].value or 0
+
+            if i-5 < detail_max_pusat:
+                index = i - 4
+            else:
+                index = i + 5
+            tunjangan_jpk = detail_sheet[f'X{index}'].value or 0
+            tunjangan_jkm = detail_sheet[f'Y{index}'].value or 0
+            tunjangan_jkk = detail_sheet[f'Z{index}'].value or 0
+            tunjangan_jht = detail_sheet[f'AA{index}'].value or 0
+            tunjangan_jpn = detail_sheet[f'AB{index}'].value or 0
             bpjs = (tunjangan_jpk + tunjangan_jkm +
-                    tunjangan_jkk + tunjangan_jht + tunjangan_jp)
+                    tunjangan_jkk + tunjangan_jht + tunjangan_jpn)
             total_tunjangan = (gaji_pokok + uang_makan + tunjangan_jabatan + tunjangan_pendidikan +
                                tunjangan_masa_kerja + tunjangan_beras + pulsa + piket + lembur + bonus)
 
             # Potongan
-            potongan_jpk = data_sheet[f'AF{i}'].value or 0
-            potongan_jht = data_sheet[f'AG{i}'].value or 0
+            potongan_jpk = data_sheet[f'AG{i}'].value or 0
+            potongan_jht = data_sheet[f'AF{i}'].value or 0
             kasbon = data_sheet[f'AI{i}'].value or 0
-            n_alpa = absen_sheet[f'AF{i-1}'].value
+
+            n_alpa = detail_sheet[f'AC{index}'].value or 0
+            n_cuti = detail_sheet[f'AD{index}'].value or 0
+            n_sakit = detail_sheet[f'AE{index}'].value or 0
+            n_set_hari = detail_sheet[f'AF{index}'].value or 0
+            n_telat = detail_sheet[f'AG{index}'].value or 0
+            n_cuti_habis = detail_sheet[f'AH{index}'].value or 0
+
             potongan_alpa = data_sheet[f'S{i}'].value or 0
-            n_cuti_habis = absen_sheet[f'AK{i-1}'].value
             potongan_cuti_habis = data_sheet[f'X{i}'].value or 0
-            n_ijin = absen_sheet[f'AG{i-1}'].value
-            potongan_ijin = data_sheet[f'T{i}'].value or 0
-            n_sakit = absen_sheet[f'AH{i-1}'].value
+            potongan_cuti = data_sheet[f'T{i}'].value or 0
             potongan_sakit = data_sheet[f'U{i}'].value or 0
-            n_set_hari = absen_sheet[f'AI{i-1}'].value
             potongan_set_hari = data_sheet[f'V{i}'].value or 0
-            n_telat = absen_sheet[f'AJ{i-1}'].value
             potongan_telat = data_sheet[f'W{i}'].value or 0
             potongan_claim_barang = data_sheet[f'AJ{i}'].value or 0
             potongan_claim = data_sheet[f'AK{i}'].value or 0
             potongan_sp = data_sheet[f'AL{i}'].value or 0
-            potongan_lain = bpjs
+            potongan_lain = bpjs + claim_lalu
             total_potongan = potongan_jpk + potongan_jht + kasbon + potongan_alpa + potongan_cuti_habis + \
-                potongan_ijin + potongan_sakit + potongan_set_hari + potongan_telat + potongan_lain
+                potongan_cuti + potongan_sakit + potongan_set_hari + potongan_telat + potongan_lain
 
             # Paste Tunjangan
             template_sheet['C6'].value = nama
@@ -162,11 +173,12 @@ def generate_slip(file_data):
             template_sheet['H19'].value = tunjangan_jkm
             template_sheet['H20'].value = tunjangan_jkk
             template_sheet['H21'].value = tunjangan_jht
-            template_sheet['H22'].value = tunjangan_jp
+            template_sheet['H22'].value = tunjangan_jpn
             template_sheet['H23'].value = piket
             template_sheet['H24'].value = lembur
             template_sheet['H25'].value = bonus
-            template_sheet['H26'].value = total_tunjangan + bpjs
+            template_sheet['H26'].value = claim_lalu
+            template_sheet['H27'].value = total_tunjangan + bpjs + claim_lalu
 
             # Paste Potongan
             template_sheet['O12'].value = potongan_jpk
@@ -176,8 +188,8 @@ def generate_slip(file_data):
             template_sheet['O15'].value = potongan_alpa
             template_sheet['L16'].value = n_cuti_habis
             template_sheet['O16'].value = potongan_cuti_habis
-            template_sheet['L17'].value = n_ijin
-            template_sheet['O17'].value = potongan_ijin
+            template_sheet['L17'].value = n_cuti
+            template_sheet['O17'].value = potongan_cuti
             template_sheet['L18'].value = n_sakit
             template_sheet['O18'].value = potongan_sakit
             template_sheet['L19'].value = n_set_hari
@@ -192,10 +204,10 @@ def generate_slip(file_data):
 
             template_sheet['O29'].value = data_sheet[f'AN{i}'].value
             template_sheet['O30'].value = data_sheet[f'AO{i}'].value
-            template_sheet['O34'].value = data_sheet[f'AN{i}'].value + \
+            template_sheet['O35'].value = data_sheet[f'AN{i}'].value + \
                 data_sheet[f'AO{i}'].value
 
-            template_sheet['F34'].value = nama
+            template_sheet['F35'].value = nama
 
             # Log Email
             log_sheet[f'A{i-6}'].value = nama
@@ -218,4 +230,3 @@ def generate_slip(file_data):
         app.quit()
         showinfo(title="Message",
                  message=f"{e}")
-        print(e)
