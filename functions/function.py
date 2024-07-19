@@ -118,8 +118,10 @@ def generate_slip(file_data):
             piket = data_sheet[f'L{i}'].value or 0
             lembur = data_sheet[f'M{i}'].value or 0
             bonus = data_sheet[f'N{i}'].value or 0
+            sewa_motor = data_sheet[f'P{i}'].value or 0
             claim_lalu = data_sheet[f'J{i}'].value or 0
 
+            # BPJS
             if i-5 < detail_max_pusat:
                 index = i - 4
             else:
@@ -155,7 +157,7 @@ def generate_slip(file_data):
             potongan_claim_barang = data_sheet[f'AJ{i}'].value or 0
             potongan_claim = data_sheet[f'AK{i}'].value or 0
             potongan_sp = data_sheet[f'AL{i}'].value or 0
-            potongan_lain = bpjs + claim_lalu
+            potongan_lain = bpjs + claim_lalu + sewa_motor
             total_potongan = potongan_jpk + potongan_jht + kasbon + potongan_alpa + potongan_cuti_habis + \
                 potongan_cuti + potongan_sakit + potongan_set_hari + potongan_telat + potongan_lain
 
@@ -177,8 +179,9 @@ def generate_slip(file_data):
             template_sheet['H23'].value = piket
             template_sheet['H24'].value = lembur
             template_sheet['H25'].value = bonus
-            template_sheet['H26'].value = claim_lalu
-            template_sheet['H27'].value = total_tunjangan + bpjs + claim_lalu
+            template_sheet['H26'].value = sewa_motor
+            template_sheet['H27'].value = claim_lalu
+            template_sheet['H28'].value = total_tunjangan + potongan_lain
 
             # Paste Potongan
             template_sheet['O12'].value = potongan_jpk
@@ -200,14 +203,14 @@ def generate_slip(file_data):
             template_sheet['O22'].value = potongan_claim_barang
             template_sheet['O23'].value = potongan_claim
             template_sheet['O24'].value = potongan_lain
-            template_sheet['O26'].value = total_potongan
+            template_sheet['O25'].value = total_potongan
 
-            template_sheet['O29'].value = data_sheet[f'AN{i}'].value
-            template_sheet['O30'].value = data_sheet[f'AO{i}'].value
-            template_sheet['O35'].value = data_sheet[f'AN{i}'].value + \
+            template_sheet['O31'].value = data_sheet[f'AN{i}'].value
+            template_sheet['O32'].value = data_sheet[f'AO{i}'].value
+            template_sheet['O36'].value = data_sheet[f'AN{i}'].value + \
                 data_sheet[f'AO{i}'].value
 
-            template_sheet['F35'].value = nama
+            template_sheet['F36'].value = nama
 
             # Log Email
             log_sheet[f'A{i-6}'].value = nama
